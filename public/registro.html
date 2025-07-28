@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de nuevos usuarios</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(to right, #1e3c72, #2a5298);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .card {
+            background-color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .card h4 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #1e3c72;
+            font-weight: 600;
+        }
+
+        .form-control {
+            border-radius: 8px;
+        }
+
+        .btn-primary {
+            background-color: #1e3c72;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #16325c;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h4>Registro de nuevos usuarios</h4>
+
+        <input type="text" id="txt_nombre" class="form-control mb-3" placeholder="Escriba el nombre" />
+        <input type="text" id="txt_email" class="form-control mb-3" placeholder="Escriba el email" />
+        <input type="password" id="txt_clave" class="form-control mb-4" placeholder="Escriba la clave" />
+
+        <input type="button" value="Registrarse" class="btn btn-primary w-100" onclick="registro()" />
+    </div>
+
+    <script>
+        function registro() {
+            nombreinput = document.getElementById("txt_nombre").value;
+            emailinput = document.getElementById("txt_email").value;
+            passinput = document.getElementById("txt_clave").value;
+
+            fetch('/api/usuarios', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nombre: nombreinput,
+                    email: emailinput,
+                    clave: passinput
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Usuario creado:', data);
+                alert('Usuario creado exitosamente');
+            });
+        }
+    </script>
+
+</body>
+</html>
