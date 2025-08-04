@@ -24,64 +24,171 @@
 <div>
   <input type="color" id="color-picker" value="#ffffff" />
   <button id="btn-guardar">Guardar Diseño</button>
+  <button id="btn-modificar-real">Modificar Diseño</button>
   <button id="btn-limpiar">Reiniciar Colores</button>
+  <input type="hidden" id="camiseta-id"> <!-- Input oculto para el ID de la camiseta -->
 </div>
+
+<hr>
+<table id="tabla-camisetas" class="display">
+  <thead>
+    <tr>
+      <th>Miniatura</th>
+      <th>Fecha creación</th>
+      <th>Creador</th>  <!-- Nueva columna para el nombre/correo del creador -->
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- El cuerpo se llenará dinámicamente -->
+  </tbody>
+</table>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
 <script>
-    // Referencias a elementos del DOM
 const svg = document.getElementById('camiseta-svg');
 const colorPicker = document.getElementById('color-picker');
 const btnGuardar = document.getElementById('btn-guardar');
+const btnModificarReal = document.getElementById('btn-modificar-real');
+const camisetaIdInput = document.getElementById('camiseta-id');
 const btnLimpiar = document.getElementById('btn-limpiar');
 
-let parteSeleccionada = null; // elemento SVG actualmente seleccionado por el usuario
+let parteSeleccionada = null;
 
-// Event listener para seleccionar parte de la camiseta al hacer click
 svg.addEventListener('click', (event) => {
   if (event.target.classList.contains('parte-camiseta')) {
-    parteSeleccionada = event.target;  // establece la parte clickeada como seleccionada
-    // Opcional: resaltar de alguna forma la parte seleccionada, o mostrar su nombre
-    console.log('Parte seleccionada:', parteSeleccionada.id);
-    // Actualizar el colorPicker al color actual de la parte
+    parteSeleccionada = event.target;
     const colorActual = parteSeleccionada.getAttribute('fill');
     colorPicker.value = colorActual;
   }
 });
 
-// Event listener para cambiar color de la parte seleccionada
 colorPicker.addEventListener('input', (event) => {
   if (parteSeleccionada) {
     parteSeleccionada.setAttribute('fill', event.target.value);
   }
 });
 
-// Botón para reiniciar todos los colores a blanco
 btnLimpiar.addEventListener('click', () => {
   document.querySelectorAll('.parte-camiseta').forEach(el => {
     el.setAttribute('fill', '#ffffff');
   });
 });
+
 btnGuardar.addEventListener('click', async () => {
-  // Obtener colores actuales de cada parte
-  const diseño = {
+  const diseño = obtenerColoresActuales();
+  const resp = await fetch('/api/camisetas', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + localStorage.getItem('token')
+    },
+    body: JSON.stringify(diseño)
+  });
+  await resp.json();
+  cargarTabla();
+  btnLimpiar.click();
+});
+
+btnModificarReal.addEventListener('click', async () => {
+  const camisetaId = camisetaIdInput.value;
+  const diseño = obtenerColoresActuales();
+  const resp = await fetch(`/api/camisetas/${camisetaId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + localStorage.getItem('token')
+    },
+    body: JSON.stringify(diseño)
+  });
+  await resp.json();
+  cargarTabla();
+  btnLimpiar.click();
+  btnModificarReal.style.display = 'none';
+  btnGuardar.style.display = 'inline';
+});
+
+function obtenerColoresActuales() {
+  return {
     torsoColor: document.getElementById('torso').getAttribute('fill'),
     mangaIzqColor: document.getElementById('manga-izquierda').getAttribute('fill'),
     mangaDerColor: document.getElementById('manga-derecha').getAttribute('fill'),
     cuelloDerColor: document.getElementById('cuelloder').getAttribute('fill'),
     cuelloIzqColor: document.getElementById('cuelloizq').getAttribute('fill')
   };
-  // Enviar via fetch al servidor
-  const resp = await fetch('/api/camisetas', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + localStorage.getItem('token')  // incluir token si es ruta protegida
-    },
-    body: JSON.stringify(diseño)
-  });
-  const data = await resp.json();
-  console.log('Diseño guardado en servidor:', data);
-});
+}
 
+function generarMiniatura(c) {
+  return `<svg class="miniatura" viewBox="1 2 26 14" width="100" height="50">
+    <path d="M 4 8 M 5 3 L 5 6 L 3 7 L 1 5" fill="${c.mangaIzqColor}" />
+    <path d="M 9 5 L 7 3 L 5 3 L 5 6 L 5 12 L 13 12 L 13 6 L 13 3 L 11 3" fill="${c.torsoColor}" />
+    <path d="M 13 6 L 13 3 L 17 5 L 15 7" fill="${c.mangaDerColor}" />
+    <path d="M 8 2 L 7 3 L 9 5 L 8 3" fill="${c.cuelloIzqColor}" />
+    <path d="M 10 2 L 11 3 L 9 5 L 10 3 M1,4" fill="${c.cuelloDerColor}" />
+  </svg>`;
+}
+
+async function cargarTabla() {
+  try {
+    const resp = await fetch('/api/camisetas', {
+      headers: {
+        'Authorization': 'Bearer ' + localStorage.getItem('token')
+      }
+    });
+    const camisetas = await resp.json();
+    const table = $('#tabla-camisetas').DataTable();
+    table.clear();
+    camisetas.forEach(c => {
+      const nombreCreador = c.creador?.nombre || c.creador?.correo || 'Desconocido';
+      table.row.add([
+        generarMiniatura(c),
+        new Date(c.fechaCreacion || Date.now()).toLocaleString(),
+        nombreCreador,
+        `<button onclick='editarCamiseta("${c._id}")'>Modificar</button>
+         <button onclick='eliminarCamiseta("${c._id}")'>Eliminar</button>`
+      ]);
+    });
+    table.draw();
+  } catch (err) {
+    console.error('Error al cargar camisetas:', err);
+  }
+}
+
+async function editarCamiseta(id) {
+  const resp = await fetch(`/api/camisetas/${id}`, {
+    headers: {
+      'Authorization': 'Bearer ' + localStorage.getItem('token')
+    }
+  });
+  const camiseta = await resp.json();
+  document.getElementById('torso').setAttribute('fill', camiseta.torsoColor);
+  document.getElementById('manga-izquierda').setAttribute('fill', camiseta.mangaIzqColor);
+  document.getElementById('manga-derecha').setAttribute('fill', camiseta.mangaDerColor);
+  document.getElementById('cuelloder').setAttribute('fill', camiseta.cuelloDerColor);
+  document.getElementById('cuelloizq').setAttribute('fill', camiseta.cuelloIzqColor);
+  camisetaIdInput.value = camiseta._id;
+  btnGuardar.style.display = 'none';
+  btnModificarReal.style.display = 'inline';
+}
+
+async function eliminarCamiseta(id) {
+  if (!confirm('¿Estás seguro de que quieres eliminar esta camiseta?')) return;
+  await fetch(`/api/camisetas/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': 'Bearer ' + localStorage.getItem('token')
+    }
+  });
+  cargarTabla();
+}
+
+$(document).ready(() => {
+  $('#tabla-camisetas').DataTable({ responsive: true });
+  btnModificarReal.style.display = 'none';
+  cargarTabla();
+});
 </script>
  <style>
 * {
@@ -92,19 +199,18 @@ btnGuardar.addEventListener('click', async () => {
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(145deg, #dfe6ed, #f5f7fa);
+  background: linear-gradient(145deg, #e3ecf4, #f5f7fa);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
   padding: 40px 20px;
 }
 
 h2 {
   color: #2c3e50;
   font-size: 2.2rem;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   text-align: center;
 }
 
@@ -113,13 +219,13 @@ h2 {
   padding: 0;
   border-radius: 25px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  width: 400px;
-  height: 400px;
-  margin-bottom: 30px;
+  width: 350px;
+  height: 350px;
+  margin-bottom: 25px;
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden; /* Evita desbordamiento */
+  overflow: hidden;
 }
 
 svg {
@@ -129,41 +235,77 @@ svg {
   max-height: none;
 }
 
-div:last-of-type {
+.control-panel {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 25px;
   flex-wrap: wrap;
-  margin-top: 10px;
+  gap: 15px;
+  margin-bottom: 30px;
 }
 
 input[type="color"] {
-  width: 65px;
-  height: 65px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 button {
-  padding: 14px 24px;
-  font-size: 16px;
+  padding: 10px 16px;
+  font-size: 14px;
   background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.2s ease;
 }
 
 button:hover {
   background-color: #005bb5;
 }
 
-  </style>
+#tabla-camisetas_wrapper {
+  width: 100%;
+  max-width: 900px;
+  margin-top: 30px;
+}
 
+table.dataTable {
+  border-collapse: collapse;
+  width: 100%;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+table.dataTable th,
+table.dataTable td {
+  padding: 10px 12px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+table.dataTable th {
+  background-color: #f0f4f8;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+table.dataTable td button {
+  margin: 2px;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.miniatura {
+  width: 50px;
+  height: 25px;
+}
+</style>
 
 
 </body>

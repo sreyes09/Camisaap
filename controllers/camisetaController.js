@@ -1,12 +1,26 @@
 const Camiseta = require('../models/Camiseta');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-
+const Usuario = require('../models/Usuario');
 
 exports.getCamisetas = async (req, res) => {
   try {
-    const Camiseta = await Camiseta.find();
-    res.json(Camiseta);
+    const camisetas = await Camiseta.find();
+    const camisetasConUsuario = await Promise.all(
+      camisetas.map(async (c) => {
+        try {
+          const usuario = await Usuario.findById(c.creador).select('nombre correo');
+          return {
+            ...c.toObject(),
+            creador: usuario || null
+          };
+        } catch {
+          return {
+            ...c.toObject(),
+            creador: null
+          };
+        }
+      })
+    );
+    res.json(camisetasConUsuario);
   } catch (error) {
     res.status(500).json({ error: 'Error del servidor' });
   }
@@ -14,24 +28,20 @@ exports.getCamisetas = async (req, res) => {
 
 exports.getCamisetaById = async (req, res) => {
   try {
-    const Camiseta = await Camiseta.findById(req.params.id);
-    if (!Camiseta) return res.status(404).json({ error: 'Camiseta no encontrado' });
-    res.json(Camiseta);
+    const camiseta = await Camiseta.findById(req.params.id);
+    if (!camiseta) return res.status(404).json({ error: 'Camiseta no encontrada' });
+    res.json(camiseta);
   } catch (error) {
-    res.status(500).json({ error: 'Error del servidor' }); 
+    res.status(500).json({ error: 'Error del servidor' });
   }
 };
 
 exports.createCamiseta = async (req, res) => {
   try {
-   
-        // 1. Generar un salt (semilla aleatoria) para el hash
-
-  const nuevoCamiseta = new Camiseta(req.body);
-   CamisetaGuardada= await nuevoCamiseta.save();
-    
-
-    res.status(201).json(CamisetaGuardada);
+    const nuevaCamiseta = new Camiseta(req.body);
+    nuevaCamiseta.creador = req.usuarioId;
+    const camisetaGuardada = await nuevaCamiseta.save();
+    res.status(201).json(camisetaGuardada);
   } catch (error) {
     console.error(error);
     res.status(400).json({ error: 'Error al crear camiseta' });
@@ -40,23 +50,23 @@ exports.createCamiseta = async (req, res) => {
 
 exports.updateCamiseta = async (req, res) => {
   try {
-    const CamisetaActualizada = await Camiseta.findByIdAndUpdate(
+    const camisetaActualizada = await Camiseta.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true }
     );
-    if (!CamisetaActualizada) return res.status(404).json({ error: 'Camiseta no encontrado' });
-    res.json(CamisetaActualizada);
+    if (!camisetaActualizada) return res.status(404).json({ error: 'Camiseta no encontrada' });
+    res.json(camisetaActualizada);
   } catch (error) {
-    res.status(400).json({ error: 'Error al actualizar usuario' });
+    res.status(400).json({ error: 'Error al actualizar camiseta' });
   }
 };
 
 exports.deleteCamiseta = async (req, res) => {
   try {
-    const CamisetaEliminada = await Camiseta.findByIdAndDelete(req.params.id);
-    if (!CamisetaEliminada) return res.status(404).json({ error: 'Camiseta no encontrado' });
-    res.json({ message: 'Camiseta eliminado' });
+    const camisetaEliminada = await Camiseta.findByIdAndDelete(req.params.id);
+    if (!camisetaEliminada) return res.status(404).json({ error: 'Camiseta no encontrada' });
+    res.json({ message: 'Camiseta eliminada' });
   } catch (error) {
     res.status(500).json({ error: 'Error del servidor' });
   }
