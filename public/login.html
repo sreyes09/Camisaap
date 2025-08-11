@@ -1,58 +1,136 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Iniciar Sesión</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+ <style>
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background: #f4f6f9; /* fondo claro */
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .login-card {
+    width: min(92vw, 400px);
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.12);
+    padding: 24px 22px;
+  }
+
+  .login-title {
+    margin: 0 0 18px 0;
+    text-align: center;
+    color: #1e3c72;
+    font-size: 24px;
+    font-weight: 800;
+  }
+.form {
+  display: grid;
+  gap: 12px;
+  justify-items: center; /* Centra los inputs */
+}
+
+.form input[type="email"],
+.form input[type="password"] {
+  width: 90%; /* Menos ancho para no pegarse al borde */
+  max-width: 320px; /* Límite máximo */
+  padding: 12px 14px;
+  border: 1px solid #dfe3ea;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  background: #fff;
+  transition: border-color .2s, box-shadow .2s;
+}
+  .form input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0,123,255,.15);
+  }
+
+  .btn-primary {
+  width: 90%;
+  max-width: 320px;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: #007bff;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s;
+  margin-top: 6px;
+}
+
+  .btn-primary:hover { background: #005bb5; }
+
+  #mensaje {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 14px;
+    min-height: 18px;
+  }
+</style>
+
 </head>
 <body>
-  <h2>Login</h2>
 
-  <form id="formLogin">
-    <input type="email" id="email" placeholder="Correo electrónico" required><br>
-    <input type="password" id="clave" placeholder="Contraseña" required><br>
-    <button type="submit">Iniciar sesión</button>
-  </form>
+  <div class="login-card">
+    <h2 class="login-title">Login</h2>
 
-  <p id="mensaje"></p>
+    <form id="formLogin" class="form" novalidate>
+      <input type="email" id="email" placeholder="Correo electrónico" required />
+      <input type="password" id="clave" placeholder="Contraseña" required />
+      <button type="submit" class="btn-primary">Iniciar sesión</button>
+    </form>
+
+    <p id="mensaje"></p>
+  </div>
 
   <script>
     document.getElementById('formLogin').addEventListener('submit', async function(e) {
       e.preventDefault();
 
       const datos = {
-        email: document.getElementById('email').value,
+        email: document.getElementById('email').value.trim(),
         clave: document.getElementById('clave').value
       };
+
+      const mensaje = document.getElementById('mensaje');
+      mensaje.textContent = '';
 
       try {
         const respuesta = await fetch('/api/usuarios/login', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(datos)
         });
 
         const resultado = await respuesta.json();
 
         if (!respuesta.ok) {
-          document.getElementById('mensaje').innerText = resultado.error || 'Credenciales inválidas';
+          mensaje.textContent = resultado.error || 'Credenciales inválidas';
           return;
         }
 
-        // Guardar el token en localStorage
+        // Guardar el token y redirigir
         localStorage.setItem('token', resultado.token);
-        document.getElementById('mensaje').innerText = '¡Inicio de sesión exitoso!';
+        mensaje.style.color = '#1e9e59';
+        mensaje.textContent = '¡Inicio de sesión exitoso!';
 
-        // Redireccionar o continuar lógica
-        // window.location.href = 'dashboard.html'; // si aplica
-const token = localStorage.getItem('token');
-location.href = `/camiseta?token=${encodeURIComponent(token)}`;
+        const token = localStorage.getItem('token');
+        location.href = `/camiseta?token=${encodeURIComponent(token)}`;
       } catch (error) {
         console.error('Error al iniciar sesión:', error);
-        document.getElementById('mensaje').innerText = 'Ocurrió un error en el servidor.';
+        mensaje.textContent = 'Ocurrió un error en el servidor.';
       }
     });
   </script>
 </body>
 </html>
+

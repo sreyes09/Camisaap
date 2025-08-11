@@ -1,15 +1,14 @@
-// Ejemplo de esquema Camiseta (simplificado)
-const { Schema, model } = require('mongoose');
-const CamisetaSchema = new Schema({
-  creador: String,
+const mongoose = require('mongoose');
+
+const camisetaSchema = new mongoose.Schema({
   torsoColor: String,
   mangaIzqColor: String,
   mangaDerColor: String,
-  cuelloDerColor: String,
   cuelloIzqColor: String,
+  cuelloDerColor: String,
+  creador: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' },
   fechaCreacion: { type: Date, default: Date.now },
-  votos: [],       // (ver siguiente sección)
-  calificacion: { type: Number, default: 0 }
+  calificacion: { type: Number, default: 0 } // 👈 Aquí se inicializa
 });
 
-module.exports = model('Camiseta', CamisetaSchema)
+module.exports = mongoose.model('Camiseta', camisetaSchema);

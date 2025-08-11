@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 function verificarToken(req, res, next) {
   const authHeader = req.headers['authorization'];
@@ -15,7 +16,7 @@ function verificarToken(req, res, next) {
   }
 
   try {
-    const decoded = jwt.verify(token, 'SECRETO_SUPER_SEGUR0');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.usuarioId = decoded.id;
     next();
   } catch (err) {
