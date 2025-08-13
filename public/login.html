@@ -4,82 +4,74 @@
   <meta charset="UTF-8" />
   <title>Iniciar Sesión</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
- <style>
-  body {
-    margin: 0;
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-    background: #f4f6f9; /* fondo claro */
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  }
-
-  .login-card {
-    width: min(92vw, 400px);
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 6px 18px rgba(0,0,0,.12);
-    padding: 24px 22px;
-  }
-
-  .login-title {
-    margin: 0 0 18px 0;
-    text-align: center;
-    color: #1e3c72;
-    font-size: 24px;
-    font-weight: 800;
-  }
-.form {
-  display: grid;
-  gap: 12px;
-  justify-items: center; /* Centra los inputs */
-}
-
-.form input[type="email"],
-.form input[type="password"] {
-  width: 90%; /* Menos ancho para no pegarse al borde */
-  max-width: 320px; /* Límite máximo */
-  padding: 12px 14px;
-  border: 1px solid #dfe3ea;
-  border-radius: 10px;
-  font-size: 14px;
-  outline: none;
-  background: #fff;
-  transition: border-color .2s, box-shadow .2s;
-}
-  .form input:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0,123,255,.15);
-  }
-
-  .btn-primary {
-  width: 90%;
-  max-width: 320px;
-  padding: 12px 14px;
-  border: 0;
-  border-radius: 10px;
-  background: #007bff;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background .2s;
-  margin-top: 6px;
-}
-
-  .btn-primary:hover { background: #005bb5; }
-
-  #mensaje {
-    margin-top: 12px;
-    text-align: center;
-    font-size: 14px;
-    min-height: 18px;
-  }
-</style>
-
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #f4f6f9;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .login-card {
+      width: min(92vw, 400px);
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.12);
+      padding: 24px 22px;
+    }
+    .login-title {
+      margin: 0 0 18px 0;
+      text-align: center;
+      color: #1e3c72;
+      font-size: 24px;
+      font-weight: 800;
+    }
+    .form {
+      display: grid;
+      gap: 12px;
+      justify-items: center;
+    }
+    .form input[type="email"],
+    .form input[type="password"] {
+      width: 90%;
+      max-width: 320px;
+      padding: 12px 14px;
+      border: 1px solid #dfe3ea;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .form input:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 0 3px rgba(0,123,255,.15);
+    }
+    .btn-primary {
+      width: 90%;
+      max-width: 320px;
+      padding: 12px 14px;
+      border: 0;
+      border-radius: 10px;
+      background: #007bff;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .2s;
+      margin-top: 6px;
+    }
+    .btn-primary:hover { background: #005bb5; }
+    #mensaje {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 14px;
+      min-height: 18px;
+    }
+  </style>
 </head>
 <body>
-
   <div class="login-card">
     <h2 class="login-title">Login</h2>
 
@@ -118,13 +110,13 @@
           return;
         }
 
-        // Guardar el token y redirigir
+        // Guardar el token
         localStorage.setItem('token', resultado.token);
         mensaje.style.color = '#1e9e59';
         mensaje.textContent = '¡Inicio de sesión exitoso!';
 
-        const token = localStorage.getItem('token');
-        location.href = `/camiseta?token=${encodeURIComponent(token)}`;
+        // Ir al índice (sin pasar token por la URL)
+        location.href = '/index.html';
       } catch (error) {
         console.error('Error al iniciar sesión:', error);
         mensaje.textContent = 'Ocurrió un error en el servidor.';
@@ -133,4 +125,3 @@
   </script>
 </body>
 </html>
-

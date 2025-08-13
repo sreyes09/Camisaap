@@ -1,14 +1,16 @@
+// seguridad/auth.js
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
 
 function verificarToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  let token = null;
+  // 1) Intentar por query ?token=  (lo dejas por compatibilidad)
+  let token = req.query.token;
 
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    token = authHeader.split(' ')[1];
-  } else if (req.query.token) {
-    token = req.query.token;
+  // 2) Si no vino por query, intentarlo por el header Authorization
+  if (!token) {
+    const authHeader = req.headers['authorization']; // headers siempre en minúscula en Node
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.slice(7); // quitar 'Bearer '
+    }
   }
 
   if (!token) {
@@ -16,12 +18,13 @@ function verificarToken(req, res, next) {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token,process.env.JWT_SECRET); // usa la misma clave que en login
     req.usuarioId = decoded.id;
-    next();
+    return next();
   } catch (err) {
     return res.status(403).json({ error: 'Token inválido o expirado' });
   }
 }
 
 module.exports = { verificarToken };
+
