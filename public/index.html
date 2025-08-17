@@ -1,12 +1,102 @@
 <html>
     <head>
 
+        <style>
+            /* Reset básico */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(145deg, #e3f2fd, #f9fbfd); /* mismo mood que login */
+  color: #2c3e50;
+}
+
+/* Centrado del contenido */
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* Tarjeta contenedora opcional (sin cambiar tu HTML) */
+
+
+/* Estilo de botones (input[type=button]) */
+input[type="button"] {
+  --primary: #0d6efd;           /* azul como el login */
+  --primary-hover: #0b5ed7;
+  --ring: rgba(13, 110, 253, .35);
+
+  appearance: none;
+  border: none;
+  outline: none;
+
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: .2px;
+
+  padding: 12px 20px;
+  border-radius: 10px;
+
+  box-shadow:
+    0 8px 18px rgba(13,110,253,.20),
+    0 2px 4px rgba(0,0,0,.06);
+
+  cursor: pointer;
+  transition:
+    transform .12s ease,
+    background-color .15s ease,
+    box-shadow .15s ease;
+}
+
+/* Espaciado entre tus tres botones */
+input[type="button"] + input[type="button"] {
+  margin-left: 12px;
+}
+
+/* Hover / focus */
+input[type="button"]:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow:
+    0 10px 22px rgba(13,110,253,.25),
+    0 3px 6px rgba(0,0,0,.08);
+}
+
+input[type="button"]:focus-visible {
+  box-shadow:
+    0 0 0 4px var(--ring),
+    0 8px 18px rgba(13,110,253,.20),
+    0 2px 4px rgba(0,0,0,.06);
+}
+
+/* Estado activo (click) */
+input[type="button"]:active {
+  transform: translateY(0);
+}
+
+/* Layout responsivo: botones en columna en pantallas pequeñas */
+@media (max-width: 640px) {
+  body {
+    padding: 16px;
+  }
+  input[type="button"] {
+    width: 100%;
+    max-width: 420px;
+    margin: 8px 0 !important;
+  }
+}
+
+        </style>
     </head>
     <body>
 
-<input type="button" value="ir al carrusel" onclick="iracarrusel()">
-<input type="button" value="ir gestion de camisas"  onclick="iracamisa()">
-<input type="button" value="ir a resultados"  onclick="iraresultado()">
+<input type="button" value="Ir al carrusel" onclick="iracarrusel()">
+<input type="button" value="Ir gestion de camisas"  onclick="iracamisa()">
+<input type="button" value="Ir a resultados"  onclick="iraresultado()">
 
 <script>
 function iracarrusel()

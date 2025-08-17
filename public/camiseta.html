@@ -177,6 +177,9 @@ const btnLimpiar = document.getElementById('btn-limpiar');
 
 let parteSeleccionada = null;
 
+const t = localStorage.getItem('token');
+if (!t) location.href = '/login';
+
 // Centrar y escalar la camiseta
 function centrarYEscalarCamiseta(margenPct = 0.1) {
   const group = document.getElementById('camiseta-fig');
